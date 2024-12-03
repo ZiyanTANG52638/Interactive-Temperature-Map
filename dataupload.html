@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Map with Data Submission</title>
+</head>
+<body>
+    <h1>添加温度数据</h1>
+    <form>
+        <label for="latitude">纬度：</label>
+        <input type="text" id="latitude" placeholder="输入纬度"><br><br>
+
+        <label for="longitude">经度：</label>
+        <input type="text" id="longitude" placeholder="输入经度"><br><br>
+
+        <label for="temperature">温度：</label>
+        <input type="text" id="temperature" placeholder="输入温度"><br><br>
+
+        <button type="button" onclick="addData()">提交数据</button>
+    </form>
+
+    <script>
+        function addData() {
+            var lat = document.getElementById('latitude').value;  // 获取用户输入的纬度
+            var lon = document.getElementById('longitude').value; // 获取用户输入的经度
+            var temp = document.getElementById('temperature').value; // 获取用户输入的温度
+
+            // 检查用户是否输入了有效的纬度、经度和温度
+            if (lat && lon && temp) {
+                // 使用 fetch() 方法发送 POST 请求，将数据发送到后端服务器
+                fetch('http://localhost:3000/api/temperature', {  // 访问后端 API 地址
+                    method: 'POST',  // HTTP 请求方法为 POST（表示提交数据）
+                    headers: {
+                        'Content-Type': 'application/json'  // 告诉服务器发送的是 JSON 数据
+                    },
+                    body: JSON.stringify({  // 将用户输入的数据转换为 JSON 格式
+                        latitude: parseFloat(lat),  // 将纬度从字符串转换为数字
+                        longitude: parseFloat(lon),  // 将经度从字符串转换为数字
+                        temperature: temp  // 温度可以是字符串，不需要转换
+                    })
+                }).then(response => {
+                    if (response.ok) {  // 如果服务器响应成功
+                        alert('数据已成功保存！');
+                    } else {  // 如果服务器返回错误
+                        alert('保存数据时出错！');
+                    }
+                }).catch(error => {
+                    console.error('请求失败：', error);
+                    alert('无法连接到服务器！');
+                });
+            } else {
+                alert('请输入有效的纬度、经度和温度数据！');
+            }
+        }
+    </script>
+</body>
+</html>

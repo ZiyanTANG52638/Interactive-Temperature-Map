@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Temperature Map</title>
+
+    <!-- 引入 Leaflet.js 的 CSS 文件 -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <!-- 引入 Leaflet.js 的 JavaScript 文件 -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <!-- 设置地图的样式 -->
+    <style>
+        #map {
+            height: 600px; /* 设置地图的高度 */
+            width: 100%;   /* 设置地图的宽度 */
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Temperature Map</h1>
+
+    <!-- 地图的容器 -->
+    <div id="map"></div>
+
+    <script>
+        // 初始化地图
+        var map = L.map('map').setView([24.5, 117.5], 10); // 设置初始位置和缩放比例
+
+        // 添加一个地图图层（可以使用 OpenStreetMap）
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // 添加一个标记示例
+        L.marker([24.5, 117.5]).addTo(map)
+            .bindPopup('20˚C')
+            .openPopup();
+    </script>
+</body>
+</html>
+
+
+<form id="dataForm"></form>
+    <label for="latitude">Latitude (纬度):</label>
+    <input type="text" id="latitude" placeholder="e.g., 24.5"><br>
+
+    <label for="longitude">Longitude (经度):</label>
+    <input type="text" id="longitude" placeholder="e.g., 117.5"><br>
+
+    <label for="temperature">Temperature (体感温度):</label>
+    <input type="text" id="temperature" placeholder="e.g., 28°C"><br>
+
+    <label for="photo">Upload Photo (上传图片):</label>
+    <input type="file" id="photo"><br><br>
+
+    <button type="button" onclick="addData()">Add Data to Map</button>
+</form>
+
+
+<script>
+    function addData() {
+        var lat = document.getElementById('latitude').value;
+        var lon = document.getElementById('longitude').value;
+        var temp = document.getElementById('temperature').value;
+
+        if (lat && lon && temp) {
+            // 发送数据到后端
+            fetch('http://localhost:3000/api/temperature', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    latitude: parseFloat(lat),
+                    longitude: parseFloat(lon),
+                    temperature: temp
+                })
+            }).then(response => {
+                if (response.ok) {
+                    alert('Data saved successfully!');
+                } else {
+                    alert('Error saving data!');
+                }
+            });
+
+        } else {
+            alert('Please enter valid latitude, longitude, and temperature!');
+        }
+    }
+</script>
+
+ 
+<script src="https://unpkg.com/leaflet.heat"></script>
+<script>
+    // 热力图数据示例 [纬度, 经度, 强度]
+    var heat = L.heatLayer([
+        [24.5, 117.5, 0.5], // 每个点的位置和强度
+        [24.6, 117.6, 0.8]
+    ], {radius: 25}).addTo(map);
+</script>
