@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Temperature Map</title>
+
+    <!-- 引入 Leaflet.js 的 CSS 文件 -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <!-- 设置地图的样式 -->
+    <style>
+        #map { height: 600px; width: 100%; }
+    </style>
+</head>
+<body>
+    <h1>Interactive Temperature Map</h1>
+
+    <!-- 地图的容器 -->
+    <div id="map"></div>
+
+    <!-- 数据表单 -->
+    <form id="dataForm">
+        <label for="nickname">Nickname (用户昵称):</label>
+        <input type="text" id="nickname" placeholder="输入你的昵称"><br><br>
+
+        <label for="latitude">Latitude (纬度):</label>
+        <input type="text" id="latitude" placeholder="输入纬度"><br><br>
+
+        <label for="longitude">Longitude (经度):</label>
+        <input type="text" id="longitude" placeholder="输入经度"><br><br>
+
+        <label for="temperature">Temperature (体感温度):</label>
+        <input type="text" id="temperature" placeholder="输入温度 (°C)"><br><br>
+
+        <label for="photo">Upload Photo (上传图片):</label>
+        <input type="file" id="photo"><br><br>
+
+        <button type="button" onclick="addData()">Add Data to Map</button>
+    </form>
+
+    <script>
+        // 初始化地图
+        var map = L.map('map').setView([24.5, 117.5], 10);
+
+        // 添加 Mapbox 卫星图层
+        var mapboxAccessToken = 'pk.eyJ1IjoieGs4YmF0ODMiLCJhIjoiY200MnowNzA0MDY0cjJpcTVmdDkxN20wYiJ9.RzQ9HepJDL9eks1jEX86nQ';
+        L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/{z}/{x}/{y}?access_token=${mapboxAccessToken}`, {
+            attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a>',
+            tileSize: 512,
+            zoomOffset: -1
+        }).addTo(map);
+
+        // 添加示例标记
+        L.marker([24.5, 117.5]).addTo(map)
+            .bindPopup('<b>示例:</b><br>温度：20°C<br>位置：(24.5, 117.5)').on('click', function (e) {
+            this.openPopup();
+        });
+        
+        // 存储所有标记的位置
+        var allMarkers = [];
+
+        function addData() {
+        var nickname = document.getElementById('nickname').value;
+        var lat = parseFloat(document.getElementById('latitude').value);
+        var lon = parseFloat(document.getElementById('longitude').value);
+        var temp = document.getElementById('temperature').value;
+        var photoInput = document.getElementById('photo').files[0];
+
+        if (nickname && lat && lon && temp && photoInput) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+            var photoURL = e.target.result;
+
+            // 在地图上添加标记
+            var newMarker = L.marker([lat, lon]).addTo(map)
+                .bindPopup(`
+                    <b>昵称：</b>${nickname}<br>
+                    <b>温度：</b>${temp}°C<br>
+                    <b>位置：</b>(${lat}, ${lon})<br>
+                    <img src="${photoURL}" alt="Uploaded Photo" width="200">
+                `);
+
+            // 单击时展示 Popup
+            newMarker.on('click', function (e) {
+                this.openPopup();
+            });
+
+            // 添加标记位置到 allMarkers 数组
+            allMarkers.push([lat, lon]);
+
+            // 使用 fitBounds 调整视图以包含所有标记
+            map.fitBounds(allMarkers);
+
+            // 提示上传成功
+            alert('您已完成此次上传');
+
+            // 清空表单
+            clearForm();
+        };
+        reader.readAsDataURL(photoInput);  // 读取图片文件
+    } else {
+        alert('请填写完整的所有信息！');
+    }
+}
+    </script>
+</body>
+</html>
